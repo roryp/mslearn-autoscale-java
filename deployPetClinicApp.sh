@@ -128,9 +128,9 @@ az spring-cloud app create --name ${admin_server} --instance-count 1 --assign-en
 az spring-cloud app create --name ${customers_service} \
     --instance-count 1 --memory 2 --jvm-options='-Xms2048m -Xmx2048m'
 az spring-cloud app create --name ${vets_service} \
-    --instance-count 1 --memory 2 --jvm-options='-Xms2048m -Xmx2048m'
+    --instance-count 2 --memory 2 --jvm-options='-Xms2048m -Xmx2048m'
 az spring-cloud app create --name ${visits_service} \
-    --instance-count 1 --memory 2 --jvm-options='-Xms2048m -Xmx2048m'
+    --instance-count 2 --memory 2 --jvm-options='-Xms2048m -Xmx2048m'
 
 # increase connection timeout
 az mysql server configuration set --name wait_timeout \
@@ -228,6 +228,7 @@ export LOG_ANALYTICS_RESOURCE_ID=$(az monitor log-analytics workspace show \
     --workspace-name ${log_analytics} | jq -r '.id')
 
 export WEBAPP_RESOURCE_ID=$(az spring-cloud show --name ${spring_cloud_service} --resource-group ${resource_group} | jq -r '.id')
+export CUSTOMER_RESOURCE_ID=$(az spring-cloud app deployment show --name ${spring_cloud_service} --app ${customers-service} --resource-group ${resource_group} | jq -r '.id')
 
 az monitor diagnostic-settings create --name "send-spring-logs-and-metrics-to-log-analytics" \
     --resource ${WEBAPP_RESOURCE_ID} \
@@ -296,6 +297,10 @@ az monitor diagnostic-settings create --name "send-mysql-logs-and-metrics-to-log
        ]'
 
 export GATEWAY_URL=$(az spring-cloud app show --name ${api_gateway} | jq -r '.properties.url')
+
+az monitor autoscale create -g ${resource_group} --resource ${CUSTOMER_RESOURCE_ID} --name demo-setting --min-count 1 --max-count 5 --count 1
+
+az monitor autoscale rule create -g ${resource_group} --autoscale-name demo-setting --scale out 1 --cooldown 1 --condition "tomcat.global.request.total.count > 100 avg 1m where AppName == demo and Deployment == default"
 
 printf "\n"
 printf "Testing the deployed services at ${GATEWAY_URL}"
