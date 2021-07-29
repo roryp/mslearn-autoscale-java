@@ -228,7 +228,7 @@ export LOG_ANALYTICS_RESOURCE_ID=$(az monitor log-analytics workspace show \
     --workspace-name ${log_analytics} | jq -r '.id')
 
 export WEBAPP_RESOURCE_ID=$(az spring-cloud show --name ${spring_cloud_service} --resource-group ${resource_group} | jq -r '.id')
-export CUSTOMER_RESOURCE_ID=$(az spring-cloud app deployment show --name ${spring_cloud_service} --app ${customers-service} --resource-group ${resource_group} | jq -r '.id')
+export CUSTOMER_RESOURCE_ID=$(az spring-cloud app deployment show --name default --app ${customers-service} --resource-group ${resource_group} | jq -r '.id')
 
 az monitor diagnostic-settings create --name "send-spring-logs-and-metrics-to-log-analytics" \
     --resource ${WEBAPP_RESOURCE_ID} \
@@ -300,13 +300,14 @@ export GATEWAY_URL=$(az spring-cloud app show --name ${api_gateway} | jq -r '.pr
 
 az monitor autoscale create -g ${resource_group} --resource ${CUSTOMER_RESOURCE_ID} --name demo-setting --min-count 1 --max-count 5 --count 1
 
-az monitor autoscale rule create -g ${resource_group} --autoscale-name demo-setting --scale out 1 --cooldown 1 --condition "tomcat.global.request.total.count > 100 avg 1m where AppName == demo and Deployment == default"
+az monitor autoscale rule create -g ${resource_group} --autoscale-name demo-setting --scale out 1 --cooldown 1 --condition "tomcat.global.request.total.count > 5 avg 1m where AppName == demo and Deployment == default"
+az monitor autoscale rule create -g ${resource_group} --autoscale-name demo-setting --scale in 1 --cooldown 1 --condition "tomcat.global.request.total.count <= 5 avg 1m where AppName == demo and Deployment == default"
 
 printf "\n"
 printf "Testing the deployed services at ${GATEWAY_URL}"
 printf "\n"
 
-for i in `seq 1 10`; 
+for i in `seq 1 30`; 
 do
    curl -g ${GATEWAY_URL}/api/customer/owners
    curl -g ${GATEWAY_URL}/api/customer/owners/4
