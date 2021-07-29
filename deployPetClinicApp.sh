@@ -137,26 +137,6 @@ az mysql server configuration set --name wait_timeout \
  --resource-group ${resource_group} \
  --server ${mysql_server_name} --value 2147483
 
-az mysql server configuration set --name slow_query_log \
- --resource-group ${resource_group} \
- --server ${mysql_server_name} --value ON
-
-az mysql server configuration set --name audit_log_enabled \
- --resource-group ${resource_group} \
- --server ${mysql_server_name} --value ON
-
-az mysql server configuration set --name audit_log_events \
- --resource-group ${resource_group} \
- --server ${mysql_server_name} --value "ADMIN,CONNECTION,DCL,DDL,DML,DML_NONSELECT,DML_SELECT,GENERAL,TABLE_ACCESS"
-
-az mysql server configuration set --name log_queries_not_using_indexes \
- --resource-group ${resource_group} \
- --server ${mysql_server_name} --value ON
-
-az mysql server configuration set --name long_query_time \
- --resource-group ${resource_group} \
- --server ${mysql_server_name} --value 0
-
 #mysql Configuration 
 mysql -h"${mysql_server_full_name}" -u"${mysql_server_admin_login_name}" \
      -p"${mysql_server_admin_password}" \
@@ -169,14 +149,6 @@ mysql -h"${mysql_server_full_name}" -u"${mysql_server_admin_login_name}" \
 az mysql server configuration set --name time_zone \
   --resource-group ${resource_group} \
   --server ${mysql_server_name} --value "US/Eastern"
-
-az mysql server configuration set --name query_store_capture_mode \
-  --resource-group ${resource_group} \
-  --server ${mysql_server_name} --value ALL
-
-az mysql server configuration set --name query_store_capture_interval \
-  --resource-group ${resource_group} \
-  --server ${mysql_server_name} --value 5
 
 printf "\n"
 printf "Deploying the Apps to the Spring Cloud"
@@ -228,7 +200,8 @@ export LOG_ANALYTICS_RESOURCE_ID=$(az monitor log-analytics workspace show \
     --workspace-name ${log_analytics} | jq -r '.id')
 
 export WEBAPP_RESOURCE_ID=$(az spring-cloud show --name ${spring_cloud_service} --resource-group ${resource_group} | jq -r '.id')
-export CUSTOMER_RESOURCE_ID=$(az spring-cloud app deployment show --name default --app ${customers-service} --resource-group ${resource_group} | jq -r '.id')
+
+export CUSTOMER_RESOURCE_ID=$(az spring-cloud app deployment show --name default --app ${customers_service} --resource-group ${resource_group} | jq -r '.id')
 
 az monitor diagnostic-settings create --name "send-spring-logs-and-metrics-to-log-analytics" \
     --resource ${WEBAPP_RESOURCE_ID} \
@@ -262,45 +235,12 @@ az monitor diagnostic-settings create --name "send-spring-logs-and-metrics-to-lo
          }
        ]'
 
-export MYSQL_RESOURCE_ID=$(az mysql server show --name ${mysql_server_name} --resource-group ${resource_group} | jq -r '.id')
-
-az monitor diagnostic-settings create --name "send-mysql-logs-and-metrics-to-log-analytics" \
-    --resource ${MYSQL_RESOURCE_ID} \
-    --workspace ${LOG_ANALYTICS_RESOURCE_ID} \
-    --logs '[
-         {
-           "category": "MySqlAuditLogs",
-           "enabled": true,
-           "retentionPolicy": {
-             "enabled": false,
-             "days": 0
-           }
-         },
-         {
-            "category": "MySqlSlowLogs",
-            "enabled": true,
-            "retentionPolicy": {
-              "enabled": false,
-              "days": 0
-            }
-          }        
-       ]' \
-       --metrics '[
-         {
-           "category": "AllMetrics",
-           "enabled": true,
-           "retentionPolicy": {
-             "enabled": false,
-             "days": 0
-           }
-         }
-       ]'
-
 export GATEWAY_URL=$(az spring-cloud app show --name ${api_gateway} | jq -r '.properties.url')
 
 az monitor autoscale create -g ${resource_group} --resource ${CUSTOMER_RESOURCE_ID} --name demo-setting --min-count 1 --max-count 5 --count 1
 
 az monitor autoscale rule create -g ${resource_group} --autoscale-name demo-setting --scale out 1 --cooldown 1 --condition "tomcat.global.request.total.count > 5 avg 1m where AppName == demo and Deployment == default"
+
 az monitor autoscale rule create -g ${resource_group} --autoscale-name demo-setting --scale in 1 --cooldown 1 --condition "tomcat.global.request.total.count <= 5 avg 1m where AppName == demo and Deployment == default"
 
 printf "\n"
