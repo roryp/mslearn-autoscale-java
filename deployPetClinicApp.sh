@@ -237,7 +237,7 @@ az monitor diagnostic-settings create --name "send-spring-logs-and-metrics-to-lo
 
 export GATEWAY_URL=$(az spring-cloud app show --name ${api_gateway} | jq -r '.properties.url')
 
-az monitor autoscale create -g ${resource_group} --resource ${CUSTOMER_RESOURCE_ID} --name demo-setting --min-count 1 --max-count 5 --count 1
+az monitor autoscale create -g ${resource_group} --resource ${CUSTOMER_RESOURCE_ID} --name demo-setting --min-count 1 --max-count 2 --count 1
 
 export AUTOSCALE_SETTING=$(az monitor autoscale show --name demo-setting | jq -r '.id')
 
