@@ -241,9 +241,9 @@ az monitor autoscale create -g ${resource_group} --resource ${CUSTOMER_RESOURCE_
 
 export AUTOSCALE_SETTING=$(az monitor autoscale show --name demo-setting | jq -r '.id')
 
-az monitor autoscale rule create -g ${resource_group} --autoscale-name demo-setting --scale out 1 --cooldown 1 --condition "tomcat.global.request.total.count > 5 avg 1m where AppName == demo and Deployment == default"
+az monitor autoscale rule create -g ${resource_group} --autoscale-name demo-setting --scale out 1 --cooldown 1 --condition "tomcat.global.request.total.count > 5 avg 1m where AppName == ${customers_service} and Deployment == default"
 
-az monitor autoscale rule create -g ${resource_group} --autoscale-name demo-setting --scale in 1 --cooldown 1 --condition "tomcat.global.request.total.count <= 5 avg 1m where AppName == demo and Deployment == default"
+az monitor autoscale rule create -g ${resource_group} --autoscale-name demo-setting --scale in 1 --cooldown 1 --condition "tomcat.global.request.total.count <= 5 avg 1m where AppName == ${customers_service} and Deployment == default"
 
 az monitor diagnostic-settings create --name "send-autoscale-logs-and-metrics-to-log-analytics" \
     --resource ${AUTOSCALE_SETTING} \
