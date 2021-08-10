@@ -278,22 +278,16 @@ az monitor diagnostic-settings create --name "send-autoscale-logs-and-metrics-to
        ]'
 
 printf "\n"
-printf "Testing the deployed services at ${GATEWAY_URL}"
+printf "Testing the deployed customers-service at https://${spring_cloud_service}-api-gateway.azuremicroservices.io/api/customer/owners"
 printf "\n"
 
 for i in `seq 1 30`; 
 do
-   curl -g ${GATEWAY_URL}/api/customer/owners
-   curl -g ${GATEWAY_URL}/api/customer/owners/4
-   curl -g ${GATEWAY_URL}/api/customer/petTypes
-   curl -g ${GATEWAY_URL}/api/customer/owners/3/pets/4
-   curl -g ${GATEWAY_URL}/api/customer/owners/6/pets/8/
-   curl -g ${GATEWAY_URL}/api/vet/vets
-   curl -g ${GATEWAY_URL}/api/visit/owners/6/pets/8/visits
+curl -H 'Cache-Control: no-cache' https://${spring_cloud_service}-api-gateway.azuremicroservices.io/api/customer/owners?$(date +%s)
 done
 
 printf "\n"
-printf "Completed testing the deployed services"
+printf "Completed testing the deployed customers-service"
 printf "\n"
-printf "${GATEWAY_URL}"
+printf "https://${spring_cloud_service}-api-gateway.azuremicroservices.io/api/customer/owners"
 printf "\n"
