@@ -109,8 +109,7 @@ az spring-cloud create \
     --resource-group ${resource_group} \
     --name ${spring_cloud_service} \
     --location ${region} \
-    --sku standard \
-    --disable-app-insights false
+    --sku standard
 
 az configure --defaults group=${resource_group} location=${region} spring-cloud=${spring_cloud_service}
 
