@@ -110,8 +110,7 @@ az spring-cloud create \
     --name ${spring_cloud_service} \
     --location ${region} \
     --sku standard \
-    --disable-app-insights false \
-    --enable-java-agent true
+    --disable-app-insights false
 
 az configure --defaults group=${resource_group} location=${region} spring-cloud=${spring_cloud_service}
 
@@ -122,15 +121,15 @@ printf "Creating the MicroService Apps"
 printf "\n"
 
 az spring-cloud app create --name ${api_gateway} --instance-count 1 --assign-endpoint true \
-    --memory 2 --jvm-options='-Xms2048m -Xmx2048m'
+    --memory 2Gi --jvm-options='-Xms2048m -Xmx2048m'
 az spring-cloud app create --name ${admin_server} --instance-count 1 --assign-endpoint true \
-    --memory 2 --jvm-options='-Xms2048m -Xmx2048m'
+    --memory 2Gi --jvm-options='-Xms2048m -Xmx2048m'
 az spring-cloud app create --name ${customers_service} \
-    --instance-count 1 --memory 2 --jvm-options='-Xms2048m -Xmx2048m'
+    --instance-count 1 --memory 2Gi --jvm-options='-Xms2048m -Xmx2048m'
 az spring-cloud app create --name ${vets_service} \
-    --instance-count 2 --memory 2 --jvm-options='-Xms2048m -Xmx2048m'
+    --instance-count 2 --memory 2Gi --jvm-options='-Xms2048m -Xmx2048m'
 az spring-cloud app create --name ${visits_service} \
-    --instance-count 2 --memory 2 --jvm-options='-Xms2048m -Xmx2048m'
+    --instance-count 2 --memory 2Gi --jvm-options='-Xms2048m -Xmx2048m'
 
 # increase connection timeout
 az mysql server configuration set --name wait_timeout \
