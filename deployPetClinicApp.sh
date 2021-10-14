@@ -3,7 +3,7 @@ set -e
 
 # ==== Customize the below for your environment====
 resource_group='your-resource-group-name'
-region='westeurope'
+region='centralus'
 spring_cloud_service='your-azure-spring-cloud-name'
 mysql_server_name='your-sql-server-name'
 mysql_server_admin_name='your-sql-server-admin-name'
@@ -117,7 +117,7 @@ az configure --defaults group=${resource_group} location=${region} spring-cloud=
 az spring-cloud config-server set --config-file application.yml --name ${spring_cloud_service}
 
 printf "\n"
-printf "Creating the MicroService Apps"
+printf "Creating the microservice apps"
 printf "\n"
 
 az spring-cloud app create --name ${api_gateway} --instance-count 1 --assign-endpoint true \
@@ -147,22 +147,22 @@ mysql -h"${mysql_server_full_name}" -u"${mysql_server_admin_login_name}" \
 
 az mysql server configuration set --name time_zone \
   --resource-group ${resource_group} \
-  --server ${mysql_server_name} --value "US/Eastern"
+  --server ${mysql_server_name} --value "US/Central"
 
 printf "\n"
-printf "Deploying the Apps to the Spring Cloud"
+printf "Deploying the apps to Spring Cloud"
 printf "\n"
 
 az spring-cloud app deploy --name ${api_gateway} \
-    --jar-path ${api_gateway_jar} \
+    --artifact-path ${api_gateway_jar} \
     --jvm-options='-Xms2048m -Xmx2048m -Dspring.profiles.active=mysql'
 
 az spring-cloud app deploy --name ${admin_server} \
-    --jar-path ${admin_server_jar} \
+    --artifact-path ${admin_server_jar} \
     --jvm-options='-Xms2048m -Xmx2048m -Dspring.profiles.active=mysql'
 
 az spring-cloud app deploy --name ${customers_service} \
---jar-path ${customers_service_jar} \
+--artifact-path ${customers_service_jar} \
 --jvm-options='-Xms2048m -Xmx2048m -Dspring.profiles.active=mysql' \
 --env mysql_server_full_name=${mysql_server_full_name} \
       mysql_database_name=${mysql_database_name} \
@@ -170,7 +170,7 @@ az spring-cloud app deploy --name ${customers_service} \
       mysql_server_admin_password=${mysql_server_admin_password}
 
 az spring-cloud app deploy --name ${vets_service} \
---jar-path ${vets_service_jar} \
+--artifact-path ${vets_service_jar} \
 --jvm-options='-Xms2048m -Xmx2048m -Dspring.profiles.active=mysql' \
 --env mysql_server_full_name=${mysql_server_full_name} \
       mysql_database_name=${mysql_database_name} \
@@ -178,7 +178,7 @@ az spring-cloud app deploy --name ${vets_service} \
       mysql_server_admin_password=${mysql_server_admin_password}
 
 az spring-cloud app deploy --name ${visits_service} \
---jar-path ${visits_service_jar} \
+--artifact-path ${visits_service_jar} \
 --jvm-options='-Xms2048m -Xmx2048m -Dspring.profiles.active=mysql' \
 --env mysql_server_full_name=${mysql_server_full_name} \
       mysql_database_name=${mysql_database_name} \
