@@ -285,7 +285,7 @@ curl -H 'Cache-Control: no-cache' https://${spring_cloud_service}-api-gateway.az
 done
 
 printf "\n"
-printf "Completed testing the deployed customers-service"
+printf "Completed testing the deployed application"
 printf "\n"
-printf "https://${spring_cloud_service}-api-gateway.azuremicroservices.io/api/customer/owners"
+printf "https://${spring_cloud_service}-api-gateway.azuremicroservices.io"
 printf "\n"
